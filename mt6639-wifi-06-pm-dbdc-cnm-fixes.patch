@@ -1,3 +1,25 @@
+wifi: mt76: mt7925: add MT6639 power management, DBDC, and CNM fixes
+
+Three MT6639-specific fixes for WiFi functionality:
+
+1. Disable runtime PM: Every CLR_OWN triggers the ROM to reinitialize
+   WFDMA, destroying DMA ring configuration. Disable PM until the wake
+   path properly handles MT6639.
+
+2. Enable DBDC (dual-band): MT6639 firmware defaults to single-band
+   (2.4GHz only). MT7925 firmware handles DBDC automatically, but
+   MT6639 requires an explicit MCU_UNI_CMD(SET_DBDC_PARMS) with
+   mbmc_en=1. Without this, 5GHz scan requests are silently discarded.
+
+3. Force CNM capability: MT6639 firmware lacks the connac2 feature
+   trailer, causing mt792x_get_mac80211_ops() to replace channel
+   context operations with emulated stubs. This prevents ROC (remain
+   on channel) before authentication, causing auth frames to be
+   silently dropped. Force the CNM flag and restore mt7925_ops.
+
+Assisted-by: Claude Code <noreply@anthropic.com> [claude-opus-4-6]
+Signed-off-by: Javier Tia <floss@jetm.me>
+---
 diff --git a/mt7925/init.c b/mt7925/init.c
 index 3ce5d6f..d0675d7 100644
 --- a/mt7925/init.c

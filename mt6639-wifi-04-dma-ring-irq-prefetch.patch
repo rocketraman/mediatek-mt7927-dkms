@@ -1,3 +1,27 @@
+wifi: mt76: mt7925: add MT6639 DMA ring layout, IRQ map, and prefetch
+
+MT6639 uses different DMA ring indices than MT7925:
+
+  - RX MCU events: ring 6 (MT7925 uses ring 0)
+  - RX data: ring 4 (MT7925 uses ring 2)
+  - RX auxiliary: ring 7 (management frames)
+  - TX rings are identical
+
+Add mt6639_dma_init() with the correct ring allocation, a dedicated
+mt6639_irq_map with matching interrupt enable bits (BIT(12), BIT(14),
+BIT(15) for RX rings 4, 6, 7), and MT6639 packed prefetch register
+configuration in mt792x_dma_prefetch().
+
+The DMA init performs a controlled SET_OWN/CLR_OWN sequence after CBTOP
+and CBInfra initialization, since CLR_OWN triggers the ROM to initialize
+WFDMA.
+
+Ring layout and prefetch values derived from Loong0x00's
+reverse-engineered MT7927 driver.
+
+Assisted-by: Claude Code <noreply@anthropic.com> [claude-opus-4-6]
+Signed-off-by: Javier Tia <floss@jetm.me>
+---
 diff --git a/mt7925/mt7925.h b/mt7925/mt7925.h
 index 6b9bf1b..d476b13 100644
 --- a/mt7925/mt7925.h

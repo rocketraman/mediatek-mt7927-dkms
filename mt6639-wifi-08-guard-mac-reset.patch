@@ -1,3 +1,17 @@
+wifi: mt76: mt7925: guard mac_reset against MT6639 DMA destruction
+
+On MT6639 hardware, the mac_reset path performs CLR_OWN and WPDMA logic
+reset, both of which destroy DMA ring configuration. CLR_OWN triggers
+the ROM to reinitialize WFDMA, and the logic reset pulse disrupts the
+WFDMA state that mt6639_dma_init() carefully configured.
+
+A full MT6639 reset requires re-running the DMA initialization sequence,
+which is not yet implemented in the recovery path. Return -EOPNOTSUPP
+with a warning so users know to reload the module.
+
+Assisted-by: Claude Code <noreply@anthropic.com> [claude-opus-4-6]
+Signed-off-by: Javier Tia <floss@jetm.me>
+---
 diff --git a/mt7925/pci_mac.c b/mt7925/pci_mac.c
 index 1626a36..9c66e48 100644
 --- a/mt7925/pci_mac.c

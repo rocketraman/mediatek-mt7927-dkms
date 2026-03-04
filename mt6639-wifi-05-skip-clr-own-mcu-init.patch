@@ -1,3 +1,17 @@
+wifi: mt76: mt7925: skip CLR_OWN in mt7925e_mcu_init for MT6639
+
+On MT6639 hardware, every CLR_OWN triggers the ROM bootloader to
+reinitialize the WFDMA engine, destroying all DMA ring configuration
+(base addresses, prefetch settings, descriptor pointers).
+
+The DMA rings are already properly initialized by mt6639_dma_init()
+which performs a controlled CLR_OWN before ring setup. Skip the
+SET_OWN/CLR_OWN cycle in mt7925e_mcu_init() to preserve that
+configuration.
+
+Assisted-by: Claude Code <noreply@anthropic.com> [claude-opus-4-6]
+Signed-off-by: Javier Tia <floss@jetm.me>
+---
 diff --git a/mt7925/pci_mcu.c b/mt7925/pci_mcu.c
 index 6cceff8..83f1723 100644
 --- a/mt7925/pci_mcu.c

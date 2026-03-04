@@ -11,7 +11,6 @@ Key changes:
 - Per-link omac_idx for STR dual-link (MT7925 eMLSR uses 0 for all)
 - Fix ROC for all cross-band combinations, not just 2.4G primary
 - Fix broadcast/multicast RX in MLO mode (def_wcid for BSS self-STA)
-- Clear 6GHz NO_IR for indoor active scanning (LPI mode)
 - Correct BSS_MLD TLV field ordering based on Windows driver RE
 
 The band_idx fix also resolves the 4WAY_HANDSHAKE_TIMEOUT on 5/6 GHz
@@ -21,9 +20,10 @@ All changes guarded by is_mt6639() - no impact on MT7925 behavior.
 
 Tested: 5GHz+2.4GHz MLO (STR), 6GHz+2.4GHz MLO, single-link all bands.
 
-Co-developed-by: marcin-fm <marcin-fm@users.noreply.github.com>
-Signed-off-by: marcin-fm <marcin-fm@users.noreply.github.com>
+Co-developed-by: Marcin FM <marcin@lgic.pl>
+Signed-off-by: Marcin FM <marcin@lgic.pl>
 Signed-off-by: 张旭涵 <Loong.0x00@gmail.com>
+Assisted-by: Claude Code <noreply@anthropic.com> [claude-opus-4-6]
 Signed-off-by: Javier Tia <floss@jetm.me>
 ---
 diff --git a/mt7925/init.c b/mt7925/init.c
@@ -43,31 +43,6 @@ index d501a82..bca2ced 100644
  	ret = mt7925_init_mlo_caps(&dev->phy);
  	if (ret) {
  		dev_err(dev->mt76.dev, "MLO init failed\n");
-@@ -180,6 +186,24 @@ static void mt7925_init_work(struct work_struct *work)
- 		return;
- 	}
- 
-+	/* MT6639: clear NO_IR on 6GHz channels for indoor active scanning.
-+	 * cfg80211 world regdom sets NO_IR on all 6GHz; we clear it here
-+	 * since MT6639 hardware supports 6GHz active scan (LPI mode).
-+	 */
-+	if (is_mt6639(&dev->mt76)) {
-+		struct ieee80211_supported_band *sband;
-+
-+		sband = dev->mt76.hw->wiphy->bands[NL80211_BAND_6GHZ];
-+		if (sband) {
-+			int j;
-+			for (j = 0; j < sband->n_channels; j++)
-+				sband->channels[j].flags &= ~IEEE80211_CHAN_NO_IR;
-+			dev_info(dev->mt76.dev,
-+				 "MT6639: cleared NO_IR on %d 6GHz channels\n",
-+				 sband->n_channels);
-+		}
-+	}
-+
- 	ret = mt7925_init_debugfs(dev);
- 	if (ret) {
- 		dev_err(dev->mt76.dev, "register debugfs failed\n");
 diff --git a/mt7925/main.c b/mt7925/main.c
 index 4a930c1..9d0a0ae 100644
 --- a/mt7925/main.c
@@ -422,24 +397,6 @@ index d476b13..b917915 100644
  enum {
  	UNI_EVENT_ROC_GRANT = 0,
  	UNI_EVENT_ROC_GRANT_SUB_LINK = 4,
-diff --git a/mt7925/regd.c b/mt7925/regd.c
-index 292087e..129322a 100644
---- a/mt7925/regd.c
-+++ b/mt7925/regd.c
-@@ -125,6 +125,13 @@ mt7925_regd_channel_update(struct wiphy *wiphy, struct mt792x_dev *dev)
- 
- 		if (!dev->has_eht)
- 			ch->flags |= IEEE80211_CHAN_NO_EHT;
-+
-+		/* MT6639: clear NO_IR on 6GHz for indoor MLO testing.
-+		 * cfg80211 adds NO_IR for all 6GHz channels globally;
-+		 * MT6639 hardware supports 6GHz active scanning.
-+		 */
-+		if (is_mt6639(&dev->mt76))
-+			ch->flags &= ~IEEE80211_CHAN_NO_IR;
- 	}
- }
- 
 diff --git a/mt792x_mac.c b/mt792x_mac.c
 index 71dec93..f3d7c34 100644
 --- a/mt792x_mac.c

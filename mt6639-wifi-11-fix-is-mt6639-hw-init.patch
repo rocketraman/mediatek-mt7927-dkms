@@ -1,3 +1,23 @@
+wifi: mt76: mt7925: fix uninitialized is_mt6639_hw in probe
+
+is_mt6639_hw was declared at the top of mt7925_pci_probe() but only
+assigned after its first use at the irq_map selection. The uninitialized
+value (typically zero on x86_64) caused the mt7925 IRQ map to be selected
+instead of mt6639_irq_map. With the wrong map the driver polls RX rings
+0/2 instead of 4/6/7, so MCU responses are never received and every
+command times out with "Failed to get patch semaphore".
+
+Fix by initializing is_mt6639_hw at declaration from pdev->device.
+
+Also remove a stale MT_WFDMA0_GLO_CFG_EXT1 define that pointed to the
+wrong register address (MT_WFDMA0 base 0xd4000 instead of MT_UWFDMA0
+base 0x24000). The correct BIT(28) write is already handled by
+mt792x_dma_enable() via MT_UWFDMA0_GLO_CFG_EXT1.
+
+Reported-by: Loong0x00 <Loong0x00@users.noreply.github.com>
+Assisted-by: Claude Code <noreply@anthropic.com> [claude-opus-4-6]
+Signed-off-by: Javier Tia <floss@jetm.me>
+---
 diff --git a/mt7925/pci.c b/mt7925/pci.c
 index a369508..27f1c0b 100644
 --- a/mt7925/pci.c

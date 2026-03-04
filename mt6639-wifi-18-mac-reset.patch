@@ -14,7 +14,8 @@ requires after every boot.
 Validated: restores 2.4/5/6 GHz connectivity after firmware-triggered
 mac_reset.
 
-Signed-off-by: marcin-fm <marcin-fm@users.noreply.github.com>
+Signed-off-by: Marcin FM <marcin@lgic.pl>
+Assisted-by: Codex CLI <noreply@openai.com> [gpt-5.3-codex high]
 Signed-off-by: Javier Tia <floss@jetm.me>
 ---
 diff --git i/mt7925/mt7925.h w/mt7925/mt7925.h

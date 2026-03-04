@@ -1,3 +1,32 @@
+wifi: mt76: mt7925: enable MT6639 runtime power management
+
+Add MT6639-specific GLO_CFG register programming to mt792x_dma_enable()
+so that ADDR_EXT_EN and CSR_LBK_RX_Q_SEL_EN are correctly configured
+after every WPDMA reinitialization triggered by CLR_OWN during power
+management transitions.
+
+On MT6639, every CLR_OWN causes the ROM to reinitialize WFDMA, which
+resets the DMA configuration. The PM wake path already handles ring
+reprogramming (mt76_queue_reset restores ring base addresses from
+stored desc_dma) and prefetch configuration (mt792x_dma_prefetch has
+an is_mt6639 branch), but two GLO_CFG bits were missing from
+mt792x_dma_enable:
+
+  - BIT(26) ADDR_EXT_EN: extended DMA addressing, required for
+    MT6639's host memory access
+  - BIT(20) CSR_LBK_RX_Q_SEL_EN: loopback RX queue select, must
+    be cleared for normal DMA operation
+
+Also define proper macros for these bits and use them in
+mt6639_dma_init() to replace bare BIT() values.
+
+With the DMA recovery path now fully MT6639-aware, remove the
+is_mt6639() guard that disabled runtime PM and deep sleep. Let the
+standard mt792x power management work for MT6639 hardware.
+
+Assisted-by: Claude Code <noreply@anthropic.com> [claude-opus-4-6]
+Signed-off-by: Javier Tia <floss@jetm.me>
+---
 diff --git a/mt7925/init.c b/mt7925/init.c
 index d0675d7..d501a82 100644
 --- a/mt7925/init.c

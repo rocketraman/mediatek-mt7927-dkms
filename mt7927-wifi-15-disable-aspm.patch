@@ -1,17 +1,17 @@
-wifi: mt76: mt7925: disable ASPM for MT6639 to fix throughput collapse
+wifi: mt76: mt7925: disable ASPM for MT7927 to fix throughput collapse
 
-MT6639 (MT7927) exhibits severe throughput degradation when PCIe ASPM
+MT7927 (MT7927) exhibits severe throughput degradation when PCIe ASPM
 L1 is active.  Upload throughput drops from 1+ Gbps to ~200 Mbps, and
 intermittent download drops to ~69 Mbps have been observed.
 
-The root cause is that MT6639's CONNINFRA power domain and WFDMA
+The root cause is that MT7927's CONNINFRA power domain and WFDMA
 register access are unreliable when the PCIe link transitions in and
-out of L1 sleep state.  Unlike MT7925, MT6639 depends on CONNINFRA
+out of L1 sleep state.  Unlike MT7925, MT7927 depends on CONNINFRA
 being continuously accessible for CBTOP address remap, and its ROM
 reinitializes WFDMA on every CLR_OWN which can race with L1
 transitions.
 
-Disable ASPM unconditionally for MT6639 at probe time using the
+Disable ASPM unconditionally for MT7927 at probe time using the
 existing mt76_pci_disable_aspm() helper, which handles both the device
 and parent bridge.  This disables L0s in addition to L1; L0s power
 savings are negligible for a PCIe WLAN card and this avoids needing a
@@ -35,14 +35,14 @@ index 27f1c0b..68383ac 100644
  		goto err_free_pci_vec;
  
 -	if (mt7925_disable_aspm)
-+	/* MT6639 CONNINFRA power domain and WFDMA register access are
++	/* MT7927 CONNINFRA power domain and WFDMA register access are
 +	 * unreliable with PCIe L1 active, causing throughput to drop
 +	 * from 1+ Gbps to ~200 Mbps.  Disable ASPM unconditionally
 +	 * rather than only L1, since L0s savings are negligible for
 +	 * a PCIe WLAN card and mt76_pci_disable_aspm() already
 +	 * handles both device and parent bridge in one call.
 +	 */
-+	if (mt7925_disable_aspm || is_mt6639_hw)
++	if (mt7925_disable_aspm || is_mt7927_hw)
  		mt76_pci_disable_aspm(pdev);
  
  	ops = mt792x_get_mac80211_ops(&pdev->dev, &mt7925_ops,

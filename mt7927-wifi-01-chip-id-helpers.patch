@@ -1,9 +1,9 @@
-wifi: mt76: mt7925: add MT6639/MT7927 chip ID helpers
+wifi: mt76: mt7925: add MT7927 chip ID helpers
 
-The MediaTek MT7927 (Filogic 380) combo chip uses MT6639 WiFi silicon
+The MediaTek MT7927 (Filogic 380) combo chip uses MT7927 WiFi silicon
 that is architecturally compatible with MT7925. Extend is_mt7925() to
-match chip ID 0x7927, and add is_mt6639() for code paths that need
-MT6639-specific handling.
+match chip ID 0x7927, and add is_mt7927() for code paths that need
+MT7927-specific handling.
 
 Also add 0x7927 to is_mt76_fw_txp() to match MT7925's TXP format.
 
@@ -22,7 +22,7 @@ index 51423c7..fff498d 100644
 +	return mt76_chip(dev) == 0x7925 || mt76_chip(dev) == 0x7927;
 +}
 +
-+static inline bool is_mt6639(struct mt76_dev *dev)
++static inline bool is_mt7927(struct mt76_dev *dev)
 +{
 +	return mt76_chip(dev) == 0x7927;
  }

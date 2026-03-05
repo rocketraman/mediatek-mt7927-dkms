@@ -151,7 +151,7 @@ check_firmware() {
 	fi
 
 	local mt_dmesg
-	mt_dmesg="$(echo "$dmesg_out" | grep -E 'mt7925e|MT6639' || true)"
+	mt_dmesg="$(echo "$dmesg_out" | grep -E 'mt7925e|MT7927|MT6639' || true)"
 
 	local hw_ver=""
 	local wm_ver=""

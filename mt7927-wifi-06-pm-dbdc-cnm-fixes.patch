@@ -1,17 +1,17 @@
-wifi: mt76: mt7925: add MT6639 power management, DBDC, and CNM fixes
+wifi: mt76: mt7925: add MT7927 power management, DBDC, and CNM fixes
 
-Three MT6639-specific fixes for WiFi functionality:
+Three MT7927-specific fixes for WiFi functionality:
 
 1. Disable runtime PM: Every CLR_OWN triggers the ROM to reinitialize
    WFDMA, destroying DMA ring configuration. Disable PM until the wake
-   path properly handles MT6639.
+   path properly handles MT7927.
 
-2. Enable DBDC (dual-band): MT6639 firmware defaults to single-band
+2. Enable DBDC (dual-band): MT7927 firmware defaults to single-band
    (2.4GHz only). MT7925 firmware handles DBDC automatically, but
-   MT6639 requires an explicit MCU_UNI_CMD(SET_DBDC_PARMS) with
+   MT7927 requires an explicit MCU_UNI_CMD(SET_DBDC_PARMS) with
    mbmc_en=1. Without this, 5GHz scan requests are silently discarded.
 
-3. Force CNM capability: MT6639 firmware lacks the connac2 feature
+3. Force CNM capability: MT7927 firmware lacks the connac2 feature
    trailer, causing mt792x_get_mac80211_ops() to replace channel
    context operations with emulated stubs. This prevents ROC (remain
    on channel) before authentication, causing auth frames to be
@@ -28,14 +28,14 @@ index 3ce5d6f..d0675d7 100644
  	if (ret)
  		goto out;
  
-+	/* MT6639: Enable DBDC (dual-band) mode. Without this, firmware
++	/* MT7927: Enable DBDC (dual-band) mode. Without this, firmware
 +	 * defaults to 2.4GHz only and ignores 5GHz scan requests.
 +	 * MT7925 firmware handles DBDC automatically. */
-+	if (is_mt6639(&dev->mt76)) {
++	if (is_mt7927(&dev->mt76)) {
 +		ret = mt7925_mcu_set_dbdc(&dev->mphy, true);
 +		if (ret) {
 +			dev_warn(dev->mt76.dev,
-+				 "MT6639 DBDC enable failed: %d\n", ret);
++				 "MT7927 DBDC enable failed: %d\n", ret);
 +			ret = 0;
 +		}
 +	}
@@ -48,10 +48,10 @@ index 3ce5d6f..d0675d7 100644
  	dev->pm.stats.last_wake_event = jiffies;
  	dev->pm.stats.last_doze_event = jiffies;
 -	if (!mt76_is_usb(&dev->mt76)) {
-+	/* MT6639: disable power management. Every CLR_OWN triggers the
++	/* MT7927: disable power management. Every CLR_OWN triggers the
 +	 * ROM to reinitialize WFDMA, destroying DMA ring configuration.
-+	 * Keep the device awake until the PM wake path handles MT6639. */
-+	if (!mt76_is_usb(&dev->mt76) && !is_mt6639(&dev->mt76)) {
++	 * Keep the device awake until the PM wake path handles MT7927. */
++	if (!mt76_is_usb(&dev->mt76) && !is_mt7927(&dev->mt76)) {
  		dev->pm.enable_user = true;
  		dev->pm.enable = true;
  		dev->pm.ds_enable_user = true;
@@ -63,7 +63,7 @@ index 6f83c6a..58685af 100644
  		goto err_free_pci_vec;
  	}
  
-+	/* MT6639 firmware lacks the connac2 feature trailer, so
++	/* MT7927 firmware lacks the connac2 feature trailer, so
 +	 * mt792x_get_mac80211_ops() can't detect CNM support and
 +	 * replaces chanctx/ROC/mgd_prepare_tx ops with stubs.
 +	 * Force CNM and restore the original mt7925 ops. */

@@ -3,9 +3,9 @@
 # DKMS package for MediaTek MT7927 / MT6639 combo chip (Filogic 380):
 #   - Bluetooth (MT6639 via USB): WORKING - patches btusb with MT6639 device ID
 #     and installs firmware extracted from the MediaTek driver package.
-#   - WiFi (MT7925e via PCIe): WORKING - patches mt7925e driver with MT6639
+#   - WiFi (MT7925e via PCIe): WORKING - patches mt7925e driver with MT7927
 #     CBTOP remap, DMA ring layout, DBDC dual-band, and CNM channel context.
-#     Both 2.4GHz and 5GHz tested.
+#     2.4/5/6 GHz tested, 320MHz EHT, MLO, suspend/resume.
 #
 # Sources mt76 + btusb from the kernel tarball (cdn.kernel.org) to avoid
 # kernel.org CGI rate limits (503 errors after ~50 requests).
@@ -45,7 +45,7 @@
 
 pkgname=mediatek-mt7927-dkms
 pkgver=2.1
-pkgrel=18
+pkgrel=19
 # Keywords: MT7927 MT7925 MT6639 MT7902 Filogic 380 WiFi 7 Bluetooth btusb mt7925e mt7921e
 pkgdesc="DKMS Bluetooth (MT6639) and WiFi (MT7925e/MT7902) modules for MediaTek MT7927 Filogic 380"
 arch=('x86_64')
@@ -65,7 +65,7 @@ _driver_filename='DRV_WiFi_MTK_MT7925_MT7927_TP_W11_64_V5603998_20250709R.zip'
 _driver_sha256='b377fffa28208bb1671a0eb219c84c62fba4cd6f92161b74e4b0909476307cc8'
 
 # Kernel version the mt76 WiFi patches target
-_mt76_kver='6.19.4'
+_mt76_kver='6.19.6'
 
 source=(
   "https://cdn.kernel.org/pub/linux/kernel/v${_mt76_kver%%.*}.x/linux-${_mt76_kver}.tar.xz"
@@ -73,7 +73,7 @@ source=(
   'dkms.conf'
   'dkms-patchmodule.sh'
 )
-sha256sums=('279b3bc4c11d1805a9ca1665272207d3d1985e38eeffefd50f7ab990fe89c8ac'
+sha256sums=('4d9f3ff73214f68c0194ef02db9ca4b7ba713253ac1045441d4e9f352bc22e14'
             'e94c77671abe0d589faa01c1a9451f626b1fc45fb04f765b43fd0e126d01a436'
             '9f4a0d13e782582c3f0cf59f66cfa0084d08473ada76067dbcb85ee8d9988b26'
             'bd29eefcec618ec17d6ff3b6521d8292a6e092c3cbbdd1fca93b63e4c86a7fec')
@@ -174,8 +174,8 @@ build() {
   echo "Applying mt7902-wifi-6.19.patch..."
   patch -p1 < "${startdir}/mt7902-wifi-6.19.patch"
 
-  echo "Applying MT6639/MT7927 WiFi patches..."
-  for _p in "${startdir}"/mt6639-wifi-*.patch; do
+  echo "Applying MT7927 WiFi patches..."
+  for _p in "${startdir}"/mt7927-wifi-*.patch; do
     echo "  $(basename "$_p")"
     patch -p1 < "$_p"
   done
@@ -228,7 +228,7 @@ package() {
   install -Dm755 "${srcdir}/dkms-patchmodule.sh" "${_dkmsdir}/dkms-patchmodule.sh"
   install -Dm644 "${startdir}/mt6639-bt-6.19.patch" "${_dkmsdir}/patches/bt/mt6639-bt-6.19.patch"
   install -dm755 "${_dkmsdir}/patches/wifi"
-  install -m644 "${startdir}"/mt6639-wifi-*.patch "${_dkmsdir}/patches/wifi/"
+  install -m644 "${startdir}"/mt7927-wifi-*.patch "${_dkmsdir}/patches/wifi/"
   install -Dm755 "${srcdir}/extract_firmware.py" "${_dkmsdir}/extract_firmware.py"
 
   # Install pre-extracted bluetooth source for DKMS btusb builds

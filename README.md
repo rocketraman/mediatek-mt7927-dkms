@@ -142,7 +142,7 @@ See the [mt76#927](https://github.com/openwrt/mt76/issues/927) tracking issue.
 ### Upstream submission
 
 Submit WiFi patches to linux-wireless@ and BT firmware to linux-firmware. Once
-merged, this package becomes unnecessary for kernels that include MT6639 support.
+merged, this package becomes unnecessary for kernels that include MT7927 support.
 
 ### Firmware dependencies
 

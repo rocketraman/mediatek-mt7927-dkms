@@ -5,7 +5,7 @@
 #     and installs firmware extracted from the MediaTek driver package.
 #   - WiFi (MT7925e via PCIe): WORKING - patches mt7925e driver with MT7927
 #     CBTOP remap, DMA ring layout, DBDC dual-band, and CNM channel context.
-#     2.4/5/6 GHz tested, 320MHz EHT, MLO, suspend/resume.
+#     2.4/5/6 GHz tested, 320MHz EHT, suspend/resume.
 #
 # Sources mt76 + btusb from the kernel tarball (cdn.kernel.org) to avoid
 # kernel.org CGI rate limits (503 errors after ~50 requests).
@@ -45,7 +45,7 @@
 
 pkgname=mediatek-mt7927-dkms
 pkgver=2.1
-pkgrel=21
+pkgrel=22
 # Keywords: MT7927 MT7925 MT6639 MT7902 Filogic 380 WiFi 7 Bluetooth btusb mt7925e mt7921e
 pkgdesc="DKMS Bluetooth (MT6639) and WiFi (MT7925e/MT7902) modules for MediaTek MT7927 Filogic 380"
 arch=('x86_64')

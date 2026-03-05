@@ -18,7 +18,6 @@ device ID and firmware patches not yet in mainline. Distributed as an
 
 **Recently fixed:**
 - 5/6 GHz WPA 4WAY_HANDSHAKE_TIMEOUT - fixed by explicit band_idx assignment
-- EAPOL connection state progression for reliable WPA handshake
 
 ## Supported hardware
 
@@ -145,12 +144,25 @@ See [mt76#927](https://github.com/openwrt/mt76/issues/927) for the tracking issu
 Submit WiFi patches to linux-wireless@ and BT firmware to linux-firmware. Once
 merged, this package becomes unnecessary for kernels that include MT7927 support.
 
+### After the base series
+
+These are planned as follow-up patches once the 17-patch base series lands:
+
+- **MLO (Multi-Link Operation)** - STR dual-link verified working (5GHz+2.4GHz)
+  with three targeted fixes: cfg80211 BSS flag relaxation, ROC timer extension,
+  and 5GHz/6GHz band exclusion. Firmware UMAC distributes traffic across both
+  links. Needs more testing before upstream submission.
+- **mac_reset recovery** - full DMA reinitialization on firmware crash. Has
+  unguarded paths on mt7925 standalone that need fixing first.
+
 ### Firmware dependencies
 
 These issues are firmware-controlled and cannot be fixed in the driver:
 
 - **TX retransmissions** - ~35% retry rate at 320MHz, firmware manages rate
   adaptation and retry logic
+- **6GHz MLO link** - passive scan and ML probe limitations prevent 6GHz
+  link discovery (cfg80211/wpa_supplicant limitation)
 
 See [mt76#927](https://github.com/openwrt/mt76/issues/927) for detailed discussion.
 

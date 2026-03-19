@@ -140,7 +140,7 @@ git tag "${new_tag}"
 echo ""
 echo "Pushing to origin and aur..."
 git push origin master
-git push aur master
+git -c push.followTags=false push aur master
 git -c push.followTags=false push origin "${new_tag}"
 
 # Create GitHub release

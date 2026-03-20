@@ -206,6 +206,12 @@ See [mt76#927](https://github.com/openwrt/mt76/issues/927) for detailed discussi
 
 See [CHANGELOG.md](CHANGELOG.md) for the full release history.
 
+## AI attribution
+
+The kernel patches (mt76 driver changes submitted to linux-wireless and
+linux-bluetooth) are written by a human. The packaging scripts, test harness,
+and documentation in this repository use AI assistance (Claude).
+
 ## License
 
 GPL-2.0-only
